@@ -5,7 +5,11 @@ __pycache__/
 
 # C extensions
 *.so
+<<<<<<< HEAD
 
+=======
+.venv/
+>>>>>>> 4cfb7c4 (feat: db + docker)
 # Distribution / packaging
 .Python
 build/
