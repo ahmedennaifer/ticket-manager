@@ -42,4 +42,4 @@ jobs:
 
     - name: run tests
       run: |
-          docker compose run --rm assistant bash -c "PYTHONPATH=/app uv tool run pytest . -v"
+          docker compose run --rm assistant bash -c "PYTHONPATH=/app uv run pytest . -v"
