@@ -52,16 +52,16 @@ Query: My tests are failing on endpoint /api/generateInvoice. test in question: 
 
 Agent response:
 
-{   "query": query,
-    "employee": "backend",
-    "skills": "backend APIs debugging"
-    "skills": "kubernetes networking"
-    "seniority": "Senior"
-}
+{"query": query,
+"employee": "backend",
+"skills": "backend APIs debugging"
+"skills": "kubernetes networking"
+"seniority": "Senior"}
 
 You need to output exactly in this format, and select only from the list given to you, for each profession, skills etc..
 
 here is the ticket: {{ticket}}
 
+Do not include line-espace chars in your answer. return simple json
 
 """
