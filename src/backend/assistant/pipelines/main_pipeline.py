@@ -1,13 +1,9 @@
 """main pipeline that calls other pipelines"""
 
-from haystack import Pipeline
-from haystack.components.builders.chat_prompt_builder import ChatPromptBuilder
 from haystack.dataclasses import ChatMessage
 
-
-from src.assistant.agents.ticket_sorting_agent import get_ticket_sorting_agent
-from src.api.database.models.employees import Employee
-
+from src.backend.api.database.models.employees import Employee
+from src.backend.assistant.agents.ticket_sorting_agent import get_ticket_sorting_agent
 
 GREEN = "\033[1;32m"
 YELLOW = "\033[1;33m"
@@ -22,7 +18,7 @@ def output_to_employee(output_str: str) -> Employee:
     job = parts[2].strip().strip("'")
     seniority = parts[3].strip().strip("'")
     skills = parts[4].strip().strip("'")
-    tickets = parts[5].strip()
+    tickets = int(parts[5].strip("'").strip(")"))
     return Employee(
         id=id, name=name, job=job, seniority=seniority, skills=skills, tickets=tickets
     )

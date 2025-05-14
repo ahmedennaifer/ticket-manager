@@ -1,9 +1,9 @@
 """agent"""
 
 from haystack.components.agents import Agent
-from src.assistant.prompts.agent_prompt import agent_prompt
-from src.assistant.components.base_llm import get_base_chat_llm
-from src.assistant.tools.run_sql import execute_with_db_tool
+from src.backend.assistant.prompts.agent_prompt import agent_prompt
+from src.backend.assistant.components.base_llm import get_base_chat_llm
+from src.backend.assistant.tools.run_sql import execute_with_db_tool
 
 
 def get_ticket_sorting_agent():

@@ -11,7 +11,7 @@ ENV POSTGRES_USER=${POSTGRES_USER}
 ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 ENV POSTGRES_DB=${POSTGRES_DB}
 
-EXPOSE 5432
+EXPOSE 5432 5173
 
 RUN apt-get update && \
   python -m ensurepip --upgrade && \
@@ -22,7 +22,7 @@ RUN . .virtualenv/bin/activate && \
   uv sync 
 
 
-CMD ["/bin/bash", "-c","PYTHONPATH=/app  uv run src/api/main.py "] 
+CMD ["/bin/bash", "-c","PYTHONPATH=/app  uv run src/backend/api/main.py "] 
 
 
 
