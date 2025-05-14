@@ -2,12 +2,15 @@
 
 import os
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
+from dotenv import load_dotenv
+
 load_dotenv()
+
 USER = os.environ.get("POSTGRES_USER", "test")
 PW = os.environ.get("POSTGRES_PASSWORD", "pwd")
 

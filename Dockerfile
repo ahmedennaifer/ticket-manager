@@ -19,10 +19,10 @@ RUN apt-get update && \
   uv venv .virtualenv  
 
 RUN . .virtualenv/bin/activate && \
-  uv pip install -r requirements.txt  
+  uv sync 
 
 
-# CMD ["/bin/bash", "-c","PYTHONPATH=/app  uv run src/backend/main.py "] 
+CMD ["/bin/bash", "-c","PYTHONPATH=/app  uv run src/api/main.py "] 
 
 
 
