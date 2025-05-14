@@ -1,3 +1,5 @@
+"""prompt for metadata extraction"""
+
 ticket_to_schema_prompt = """
 You are a helpfull assistant. You role is to help automate client tickets.
 You role consists of : 

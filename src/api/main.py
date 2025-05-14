@@ -1,3 +1,5 @@
+"""entrypoint for server"""
+
 from src.api.database.db import get_db
 from src.api.database.models.employees import Employee
 from src.assistant.pipelines.ticket_metadata_extractor import (
@@ -6,6 +8,7 @@ from src.assistant.pipelines.ticket_metadata_extractor import (
 
 
 def main():
+    """main entrypoint"""
     db = get_db()
     res = db.query(Employee).filter(Employee.tickets >= 1).first()
     print(res)

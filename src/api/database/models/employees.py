@@ -7,6 +7,8 @@ Base = declarative_base()
 
 
 class Employee(Base):
+    """employee base class"""
+
     __tablename__ = "employees"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)

@@ -1,3 +1,5 @@
+"""ticket metadata pipeline"""
+
 from haystack import Pipeline, SuperComponent
 from haystack.components.builders import PromptBuilder
 
