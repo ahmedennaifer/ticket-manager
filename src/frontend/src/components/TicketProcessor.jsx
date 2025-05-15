@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Send, CheckCircle, User, Briefcase, Award, Code, Ticket, AlertTriangle } from 'lucide-react';
+import { Loader2, Send, CheckCircle, User, Briefcase, Award, Code, Ticket, AlertTriangle, ArrowRight, Clock } from 'lucide-react';
 
 const TicketProcessor = () => {
   const [ticket, setTicket] = useState('');
@@ -11,6 +11,7 @@ const TicketProcessor = () => {
   const [pageLoaded, setPageLoaded] = useState(false);
   const [assigningTicket, setAssigningTicket] = useState(false);
   const [assignmentSuccess, setAssignmentSuccess] = useState(false);
+  const [assignmentAnimation, setAssignmentAnimation] = useState(false);
 
   useEffect(() => {
     // Animation on component mount
@@ -38,7 +39,7 @@ const TicketProcessor = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ticket: ticket }),
+        body: JSON.stringify({ current_ticket: ticket }), // Updated to match the new API schema
       });
 
       if (!response.ok) {
@@ -53,6 +54,10 @@ const TicketProcessor = () => {
       // Update the state with the employee data from the API
       setEmployee(data);
       setSuccess(true);
+
+      // Show assignment animation
+      setAssignmentAnimation(true);
+      setTimeout(() => setAssignmentAnimation(false), 1500);
     } catch (err) {
       console.error('Error processing ticket:', err);
       setError(err.message || 'An error occurred while processing the ticket');
@@ -91,7 +96,7 @@ const TicketProcessor = () => {
         // Update the employee's ticket count
         setEmployee(prev => ({
           ...prev,
-          tickets: data.ticket_count
+          number_of_tickets: data.ticket_count
         }));
         setAssignmentSuccess(true);
 
@@ -256,7 +261,7 @@ const TicketProcessor = () => {
                     <h2 className="text-2xl font-bold text-white ml-3">Perfect Match Found</h2>
                   </div>
 
-                  <div className="bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-2xl border border-white border-opacity-20 hover:border-opacity-40 transition-all duration-500 transform hover:scale-[1.01] hover:shadow-xl shadow-md">
+                  <div className={`bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-2xl border border-white border-opacity-20 hover:border-opacity-40 transition-all duration-500 transform hover:scale-[1.01] hover:shadow-xl shadow-md ${assignmentAnimation ? 'animate-highlight' : ''}`}>
                     <div className="flex flex-col md:flex-row md:items-center gap-6">
                       <div className="relative">
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur opacity-75 animate-pulse"></div>
@@ -290,8 +295,19 @@ const TicketProcessor = () => {
 
                           <div className="employee-stat">
                             <Ticket className="h-5 w-5 text-purple-400" />
-                            <span className="ml-2 text-white">{employee.tickets} active ticket{employee.tickets !== 1 ? 's' : ''}</span>
+                            <span className="ml-2 text-white">{employee.number_of_tickets} active ticket{employee.number_of_tickets !== 1 ? 's' : ''}</span>
                           </div>
+                        </div>
+
+                        {/* Current ticket section */}
+                        <div className="mt-4 p-4 bg-black bg-opacity-20 rounded-xl border border-white border-opacity-10">
+                          <h4 className="text-white font-medium flex items-center mb-2">
+                            <Clock className="h-4 w-4 mr-2 text-cyan-400" />
+                            Current Assigned Ticket
+                          </h4>
+                          <p className="text-blue-100 text-sm pl-6 border-l-2 border-blue-500">
+                            {employee.current_ticket}
+                          </p>
                         </div>
 
                         <div className="mt-6 flex items-center">
@@ -306,7 +322,10 @@ const TicketProcessor = () => {
                                 Assigning...
                               </>
                             ) : (
-                              'Assign Ticket Now'
+                              <>
+                                <ArrowRight className="mr-1 h-4 w-4" />
+                                Assign Another Ticket
+                              </>
                             )}
                           </button>
 
@@ -434,6 +453,12 @@ const TicketProcessor = () => {
           100% { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes highlight {
+          0% { border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
+          50% { border-color: rgba(139, 92, 246, 0.8); box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+          100% { border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        
         .animate-pulse-slow {
           animation: pulse-slow 3s ease-in-out infinite;
         }
@@ -453,6 +478,10 @@ const TicketProcessor = () => {
         
         .animate-fade-in {
           animation: fade-in 0.5s ease-out forwards;
+        }
+        
+        .animate-highlight {
+          animation: highlight 1.5s ease-in-out;
         }
         
         .feature-card {

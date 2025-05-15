@@ -33,7 +33,7 @@ def execute_with_db_tool(tool_params: dict = READ_FROM_DB_TOOL_PARAMS) -> Tool:
                     job VARCHAR NOT NULL, 
                     seniority VARCHAR NOT NULL, 
                     skills VARCHAR NOT NULL, 
-                    tickets INT NOT NULL
+                    number_of_tickets INT NOT NULL
                     """,
         parameters=tool_params,
         function=_execute_with_db,

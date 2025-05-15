@@ -15,7 +15,8 @@ class Employee(Base):
     job = Column(String, nullable=False)
     seniority = Column(String, nullable=False)
     skills = Column(Text, nullable=False)
-    tickets = Column(Integer, nullable=False)
+    number_of_tickets = Column(Integer, nullable=False, default=0)
+    current_ticket = Column(Text, nullable=True)
 
     def __repr__(self):
-        return f"<Employee(id={self.id}, name='{self.name}', job='{self.job}', seniority='{self.seniority}', skills='{self.skills}', tickets={self.tickets})>"
+        return f"<Employee(id={self.id}, name='{self.name}', job='{self.job}', seniority='{self.seniority}', skills='{self.skills}', tickets={self.number_of_tickets})>"

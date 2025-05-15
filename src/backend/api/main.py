@@ -1,15 +1,13 @@
 """backend server"""
 
-from typing import Any
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from src.backend.api.database.models.employees import Employee
-from src.backend.assistant.pipelines.main_pipeline import run_main_pipe
 from src.backend.api.database.db import get_db
-
+from src.backend.assistant.pipelines.main_pipeline import run_main_pipe
 
 app = FastAPI()
 
@@ -25,7 +23,7 @@ app.add_middleware(
 class TicketRequest(BaseModel):
     """ticket req"""
 
-    ticket: str
+    current_ticket: str
 
 
 class EmployeeResponse(BaseModel):
@@ -36,69 +34,66 @@ class EmployeeResponse(BaseModel):
     job: str
     seniority: str
     skills: str
-    tickets: int
-
-
-class AssignTicketRequest(BaseModel):
-    """assign ticket res"""
-
-    id: int
-    name: str
-
-
-class AssignTicketResponse(BaseModel):
-    """assign ticket response"""
-
-    is_assigned: bool
-    ticket_count: int | Any
-
-
-@app.post("/assign_ticket/", response_model=AssignTicketResponse)
-async def assign_ticket(request: AssignTicketRequest, db: Session = Depends(get_db)):
-    """endpoint for assigning ticket"""
-    user_id = request.id
-    user_name = request.name
-    try:
-        employee = (
-            db.query(Employee)
-            .filter(Employee.id == user_id and Employee.name == user_name)
-            .first()
-        )
-        if employee:
-            try:
-                employee.tickets += 1
-                db.add(employee)
-                db.commit()
-                return AssignTicketResponse(
-                    is_assigned=True, ticket_count=employee.tickets
-                )
-            except Exception as e:
-                raise e
-    except Exception as e:
-        raise e
+    number_of_tickets: int
+    current_ticket: str
 
 
 @app.post("/process_ticket/", response_model=EmployeeResponse)
-async def process_ticket(request: TicketRequest):
+async def process_ticket(request: TicketRequest, db: Session = Depends(get_db)):
     """
     process a support ticket and return the employee
     """
-    if not request.ticket:
+    if not request.current_ticket:
         raise HTTPException(
             status_code=400, detail="Ticket description cannot be empty"
         )
-
     try:
-        employee = run_main_pipe(request.ticket)
+        employees = run_main_pipe(request.current_ticket)
 
-        return EmployeeResponse(
-            id=employee.id,
-            name=employee.name,
-            job=employee.job,
-            seniority=employee.seniority,
-            skills=employee.skills,
-            tickets=employee.tickets,
+        least_busy = sorted(employees, key=lambda x: x.number_of_tickets)[0]
+
+        existing_employee = (
+            db.query(Employee)
+            .filter_by(name=least_busy.name, job=least_busy.job)
+            .first()
         )
+
+        if existing_employee:
+            existing_employee.number_of_tickets += 1
+            existing_employee.current_ticket = request.current_ticket
+            db.commit()
+
+            return EmployeeResponse(
+                id=existing_employee.id,
+                name=existing_employee.name,
+                job=existing_employee.job,
+                seniority=existing_employee.seniority,
+                skills=existing_employee.skills,
+                number_of_tickets=existing_employee.number_of_tickets,
+                current_ticket=existing_employee.current_ticket,
+            )
+        else:
+            new_employee = Employee(
+                name=least_busy.name,
+                job=least_busy.job,
+                seniority=least_busy.seniority,
+                skills=least_busy.skills,
+                number_of_tickets=least_busy.number_of_tickets + 1,
+                current_ticket=request.current_ticket,
+            )
+            db.add(new_employee)
+            db.commit()
+            db.refresh(new_employee)
+
+            return EmployeeResponse(
+                id=new_employee.id,
+                name=new_employee.name,
+                job=new_employee.job,
+                seniority=new_employee.seniority,
+                skills=new_employee.skills,
+                number_of_tickets=new_employee.number_of_tickets,
+                current_ticket=new_employee.current_ticket,
+            )
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error processing ticket: {str(e)}"
