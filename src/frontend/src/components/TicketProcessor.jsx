@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Send, CheckCircle, User, Briefcase, Award, Code, Ticket } from 'lucide-react';
+import { Loader2, Send, CheckCircle, User, Briefcase, Award, Code, Ticket, AlertTriangle } from 'lucide-react';
 
 const TicketProcessor = () => {
   const [ticket, setTicket] = useState('');
@@ -9,6 +9,8 @@ const TicketProcessor = () => {
   const [success, setSuccess] = useState(false);
   const [showInterface, setShowInterface] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [assigningTicket, setAssigningTicket] = useState(false);
+  const [assignmentSuccess, setAssignmentSuccess] = useState(false);
 
   useEffect(() => {
     // Animation on component mount
@@ -56,6 +58,53 @@ const TicketProcessor = () => {
       setError(err.message || 'An error occurred while processing the ticket');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAssignTicket = async () => {
+    if (!employee) return;
+
+    setAssigningTicket(true);
+    setError('');
+
+    try {
+      // Call the assign_ticket endpoint
+      const response = await fetch('http://localhost:8000/assign_ticket/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: employee.id,
+          name: employee.name
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to assign ticket: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.is_assigned) {
+        // Update the employee's ticket count
+        setEmployee(prev => ({
+          ...prev,
+          tickets: data.ticket_count
+        }));
+        setAssignmentSuccess(true);
+
+        // Reset success message after 3 seconds
+        setTimeout(() => {
+          setAssignmentSuccess(false);
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Error assigning ticket:', err);
+      setError(`Failed to assign ticket: ${err.message}`);
+    } finally {
+      setAssigningTicket(false);
     }
   };
 
@@ -176,7 +225,10 @@ const TicketProcessor = () => {
 
                 {error && (
                   <div className="mt-6 p-4 bg-red-900 bg-opacity-50 border border-red-500 text-red-100 rounded-xl animate-fade-in">
-                    <p>{error}</p>
+                    <div className="flex items-start">
+                      <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                      <p>{error}</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -238,13 +290,33 @@ const TicketProcessor = () => {
 
                           <div className="employee-stat">
                             <Ticket className="h-5 w-5 text-purple-400" />
-                            <span className="ml-2 text-white">{employee.tickets} active tickets</span>
+                            <span className="ml-2 text-white">{employee.tickets} active ticket{employee.tickets !== 1 ? 's' : ''}</span>
                           </div>
                         </div>
 
-                        <button className="mt-6 px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg shadow hover:shadow-purple-500/50 transition-all duration-300 text-sm font-medium">
-                          Assign Ticket Now
-                        </button>
+                        <div className="mt-6 flex items-center">
+                          <button
+                            onClick={handleAssignTicket}
+                            disabled={assigningTicket}
+                            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg shadow hover:shadow-purple-500/50 transition-all duration-300 text-sm font-medium flex items-center"
+                          >
+                            {assigningTicket ? (
+                              <>
+                                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                Assigning...
+                              </>
+                            ) : (
+                              'Assign Ticket Now'
+                            )}
+                          </button>
+
+                          {assignmentSuccess && (
+                            <span className="ml-3 text-green-400 text-sm flex items-center animate-fade-in">
+                              <CheckCircle className="mr-1 h-4 w-4" />
+                              Ticket assigned successfully!
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
